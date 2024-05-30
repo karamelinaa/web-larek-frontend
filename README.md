@@ -47,12 +47,12 @@ yarn build
 
 ```
 interface IProductItem {
-    id:string;
-    description:string;
-    image:string;
-    title:string;
-    category:string;
-    price:number;
+    id: string;
+    description: string;
+    image: string;
+    title: string;
+    category: string;
+    price: number | null;
 }
 ```
 
@@ -84,8 +84,8 @@ export interface IProductInBasket {
 
 ```
 interface IFormInfoOrder {
-    payment:string;
-    address:string;
+    payment: string;
+    address: string;
 }
 ```
 
@@ -93,8 +93,8 @@ interface IFormInfoOrder {
 
 ```
 interface IFormInfoOrderCustomer {
-    email:string;
-    phone:string;
+    email: string;
+    phone: string;
 }
 ```
 
@@ -176,33 +176,45 @@ options: RequestInit - опции
 
 Так же класс предоставляет методы для взаимодействия с этими данными: 
 
-- getProductInBasket() : IProductItem[] - получает массив объектов `IProductItem`, представляющих список продуктов в корзине
-- setProductInBasket(product: IProductItem[]): void - устанавливает массив объектов `IProductItem` в качестве списка продуктов в корзине
-- deleteProduct(product: IProductItem): void - удаляет объект `IProductItem` из списка продуктов в корзине
+- `getProductInBasket() : IProductItem[]` - получает массив объектов `IProductItem`, представляющих список продуктов в корзине
+- `setProductInBasket(product: IProductItem[])` - устанавливает массив объектов `IProductItem` в качестве списка продуктов в корзине
+- `deleteProduct(product: IProductItem)` - удаляет объект `IProductItem` из списка продуктов в корзине
 
 ### Классы представления 
 Все классы представления отвечают за отображение внутри контейнера (DOM-элемент) передаваемых в них данных.
 
+#### Абстрактный класс Component<T>
+
+Базовый компонент который реализует вспомогательные методы для работы других классов. В конструкторе `protected constructor(protected readonly container: HTMLElement)` принимает HTMLElement с которым нужно работать.
+
+Методы класса:
+
+- `toggleClasses(element: HTMLElement, className: string)` - переключает классы на указанном элементе DOM
+- `setText(element: HTMLElement, value: unknown)` - устанавливает текстовое содержимое указанного элемента DOM
+- `setDisabled(element: HTMLElement, state: boolean)` - изменяет статус блокировки указанного элемента DOM
+- `setHidden(element: HTMLElement)` - cкрывает указанный элемент DOM
+- `setVisible(element: HTMLElement)` - показывает указанный элемент DOM
+- `setImage(element: HTMLImageElement, src: string, alt?: string)` - устанавливает изображение с альтернативным текстом
+
 #### Класс Modal
 
-Реализует модальное окно. Так же предоставляет методы `open` и `close` для управления отображением модального окна. Устанавливает слушатели на клик в оверлей и кнопку-крестик для закрытия попапа.
-
-- `constructor(container: HTMLElement, protected events: IEvents)` - конструктор принимает HTML элемент модального окна и экземпляр класса EventEmitter для возможности инициации событий. 
+Расширяет класс Component<T>. Реализует модальное окно. Так же предоставляет методы `open` и `close` для управления отображением модального окна. Устанавливает слушатели на клик в оверлей и кнопку-крестик для закрытия попапа.
+`constructor(container: HTMLElement, protected events: IEvents)` - конструктор принимает HTML элемент модального окна и экземпляр класса EventEmitter для возможности инициации событий. 
 
 Поля класса: 
 
 - _modal: HTMLElement - элемент модального окна 
-- events: IEvents - брокер событий 
+- _buttonClose: HTMLButtonElement - кнопка закрытия
 
 Методы:
 
-- open() - открытие модального окна
-- close() - закрытие модального окна
-- set modal(value: HTMLElement) - устанавливает разметку модального окна
+- `open()` - открытие модального окна
+- `close()` - закрытие модального окна
+- `set modal(value: HTMLElement)` - устанавливает разметку модального окна
 
 #### Класс ModalBasket 
 
-Расширяет класс `Modal`. Отвечает за отображение корзины, включая список продуктов и общую стоимость. 
+Расширяет класс Component<T>. Отвечает за отображение корзины, включая список продуктов и общую стоимость. 
 В конструктор класса constructor(container: HTMLFormElement, events: IEvents) передается DOM элемент темплейта, а так же экземпляр класса EventEmitter. 
 Вешает обработчик события клика на кнопку оформить.\
 
@@ -210,18 +222,18 @@ options: RequestInit - опции
 
 - _products: HTMLElement - контейнер для размещения продуктов
 - _total: HTMLElement - общая сумма покупки 
-- button: HTMLButtonElement - кнопка оформить
+- _button: HTMLButtonElement - кнопка оформить
 
 Методы:
 
-- set total(total: number) - считает общую сумму товаров
-- set products(listProducts: HTMLElement) - отображает список товаров
-- changeButton(state :boolean) - меняет состояние кнопки в зависимости от наличия товаров в корзине
+- `set total(total: number)` - считает общую сумму товаров
+- `set products(listProducts: HTMLElement)` - отображает список товаров
+- `changeButton(state :boolean)` - меняет состояние кнопки в зависимости от наличия товаров в корзине
 
 #### Класс ModalOrderForm
 
-Расширяет класс `Modal`. Отвечает за отображение формы заказа, включая поля для адреса, телефона, электронной почты и способа оплаты.
-В конструктор класса constructor(container: HTMLFormElement, events: IEvents) передается DOM элемент темплейта, а так же экземпляр класса EventEmitter. Вешается обработчик события на выбор способа оплаты.
+Расширяет класс Component<T>. Отвечает за отображение формы заказа, включая поля для адреса, телефона, электронной почты и способа оплаты.
+В конструктор класса `constructor(container: HTMLFormElement, events: IEvents)` передается DOM элемент темплейта, а так же экземпляр класса EventEmitter. Вешается обработчик события на выбор способа оплаты.
 
 Поля класса: 
 
@@ -233,15 +245,15 @@ options: RequestInit - опции
 
 Методы:
 
-- set payment (value: string) - установка способа оплаты
-- set phone(value: string) - запись телефона  
-- set address(value: string) - запись адреса
-- set email(value: string) - запись email
-- setValid(isValid: boolean) - меняет состояние кнопки на неактивную/активную, если не заполнены/заполнены поля ввода
+- `set payment (value: string)` - установка способа оплаты
+- `set phone(value: string)` - запись телефона  
+- `set address(value: string)` - запись адреса
+- `set email(value: string)` - запись email
+- `setValid(isValid: boolean)` - меняет состояние кнопки на неактивную/активную, если не заполнены/заполнены поля ввода
 
-#### Класс ProductTemplate
+#### Класс ProductCard
 
-Класс генерирует карточки товаров, используемые на странице сайта для отображения доступных товаров. Он содержит элементы разметки для различных компонентов карточки продукта, таких как изображение, описание и кнопки добавления/удаления. В конструкторе класса передается DOM элемент темплейта, что позволяет при необходимости формитровать карточки товаров в  разных вариантах верстки. 
+Расширяет класс Component<T>. Класс генерирует карточки товаров, используемые на странице сайта для отображения доступных товаров. Он содержит элементы разметки для различных компонентов карточки продукта, таких как изображение, описание и кнопки добавления/удаления. В конструкторе класса передается DOM элемент темплейта, что позволяет при необходимости формитровать карточки товаров в  разных вариантах верстки. 
 
 Поля класса содержат элементы разметки элементов товара:
 
@@ -260,7 +272,7 @@ options: RequestInit - опции
 
 #### Класс MainPage 
 
-Отвечает за отображение главной страницы сайта, содержит корзину товаров со счетчиком, также список товаров. В конструктор класса constructor(container: HTMLElement, protected events: IEvents) передается DOM элемент темплейта, а так же экземпляр класса EventEmitter. Вешается обработчик события на нажатие кнопки корзины.
+Расширяет класс Component<T>. Отвечает за отображение главной страницы сайта, содержит корзину товаров со счетчиком, также список товаров. В конструктор класса `constructor(container: HTMLElement, protected events: IEvents)` передается DOM элемент темплейта, а так же экземпляр класса EventEmitter. Вешается обработчик события на нажатие кнопки корзины.
 
 Поля класса:
 
@@ -270,8 +282,8 @@ options: RequestInit - опции
 
 Методы:
 
-- set products(product: HTMLElement) - выводит товары на страницу
-- set basketCounter(value: number) - устанавливает количество товаров в корзине 
+- `set products(product: HTMLElement)` - выводит товары на страницу
+- `set basketCounter(value: number)` - устанавливает количество товаров в корзине 
 
 ### Слой коммуникаций 
 
@@ -290,17 +302,20 @@ options: RequestInit - опции
 
 - `products:changed` - изменение массива карточек
 - `preview:changed` - выбрана карточка для показа
+- `card:select` - открытие модального окна товара
 
 События, возникающие при взаимодействии пользователя с интерфейсом (генерируются классами, отвечающими за представление): 
 
 - `basket:open` - открытие корзины
 - `basket:add` - добавление товара в корзину
+- `basket:changed` - изменения в корзине
 - `basket:delete` - удаление товара из корзины
+- `preview:delete` - удаление товара из корзины в модальном окне товара
 - `order:open` - открытие модального окна заказа
 - `order.address:change` - инпут адреса
 - `order.phone:change` - инпут номера телефона
 - `order.email:change` - инпут email
+- `order:submit` - кнопка далее в форме заказа
 - `modal:open` - открытие модального окна
 - `modal:close` - закрытие модального окна
 - `payment:select` - выбор способа оплаты
-- `order:submit` - кнопка далее в форме заказа
