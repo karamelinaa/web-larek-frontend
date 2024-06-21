@@ -8,31 +8,46 @@ export interface IProductItem {
 }
 
 
-export interface IProductPreview {
+export interface IProductData {
     products: IProductItem[];
     preview: string | null;
-    getProduct(productId: string) :IProductItem;
+    get product() :IProductItem;
     setPreview(productId: string | null): void;  
 }
 
-export interface IProductInBasket {
-    productIndex: number; 
-    productInBasket: IProductItem[]; 
-    totalPrice: number;
-    getProductInBasket() :IProductItem[];
-    setProductInBasket(product: IProductItem[]): void;  
-    deleteProduct(product: IProductItem): void;
+export interface IBasketData {
+    items: IProductItem[];
+    total: number;
 }
 
+
 export interface IFormInfoOrder {
-    payment:string;
-    address:string;
+    payment: string;
+    address: string;
 }
 
 export interface IFormInfoOrderCustomer {
-    email:string;
-    phone:string;
+    email: string;
+    phone: string;
 }
+
+export interface IOrderData extends IOrderForm {
+    items: string[];
+    total: number;
+}
+
+export interface IOrderForm extends IFormInfoOrder, IFormInfoOrderCustomer {}
+
+export interface IOrder {
+	_order: IOrderData;
+	setOrderItems(items: string[]): void;
+	clearOrder(): void;
+	setOrderField(field: keyof IOrderForm, value: string): void;
+	validateOrder(): boolean;
+}
+
+export type FormErrors = Partial<Record<keyof IOrderData, string>>;
+
 
 export interface IOrderSuccess {
 	id: string;

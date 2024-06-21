@@ -5,6 +5,8 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const { DefinePlugin } = require('webpack');
 const TerserPlugin = require("terser-webpack-plugin");
+const webpack = require('webpack');
+
 
 require('dotenv').config({
   path: path.join(process.cwd(), process.env.NODE_ENV ? `.env.${process.env.NODE_ENV}` : '.env')
@@ -24,7 +26,9 @@ const config = {
     open: true,
     host: "localhost",
     watchFiles: ["src/pages/*.html"],
-    hot: true
+    hot: true,
+    compress: true,
+    port: 8080,
   },
   plugins: [
     new HtmlWebpackPlugin({
@@ -32,6 +36,7 @@ const config = {
     }),
 
     new MiniCssExtractPlugin(),
+    new webpack.HotModuleReplacementPlugin(),
 
     // Add your plugins here
     // Learn more about plugins from https://webpack.js.org/configuration/plugins/
