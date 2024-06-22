@@ -1,11 +1,9 @@
 import { IProductItem, IProductData } from '../../types/index';
 import { Model } from '../base/model';
 
-
 export class ProductData extends Model<IProductData> {
 	protected _products: IProductItem[] = [];
 	protected _preview: string | null;
-
 
 	set products(products: IProductItem[]) {
 		this._products = products;
