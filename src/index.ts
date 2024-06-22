@@ -41,7 +41,7 @@ const modal = new Modal(ensureElement<HTMLElement>('#modal-container'), events);
 const page = new MainPage(document.body, events);
 const basket = new Basket(cloneTemplate(basketTemplate), events);
 const orderForm = new OrderPayment(cloneTemplate(orderTemplate), events);
-const сontactForm = new OrderContacts(cloneTemplate(contactsTemplate), events);
+const contactForm = new OrderContacts(cloneTemplate(contactsTemplate), events);
 const success = new Success(cloneTemplate(successTemplate), events);
 
 const productData = new ProductData({}, events);
@@ -84,26 +84,28 @@ events.on('product:select', (product: IProductItem) => {
 
 events.on('preview:changed', (product: IProductItem) => {
 	if (product) {
-	  const productCard = new ProductCard(
-		cloneTemplate(cardPreviewTemplate),
-		basketData.checkProductInBasket(product),
-		product,
-		events
-	  );
-	  productCard.buttonText = basketData.checkProductInBasket(product) 
-		? 'Удалить из корзины'
-		: 'В корзину';
-		  
-	  modal.render({
-		content: productCard.render(product),
-	  });
+		const productCard = new ProductCard(
+			cloneTemplate(cardPreviewTemplate),
+			basketData.checkProductInBasket(product),
+			product,
+			events
+		);
+		productCard.buttonText = basketData.checkProductInBasket(product)
+			? 'Удалить из корзины'
+			: 'В корзину';
+
+		modal.render({
+			content: productCard.render(product),
+		});
 	} else {
-	  modal.close();
+		modal.close();
 	}
 });
 
 events.on('preview:delete', (product: IProductItem) => {
 	basketData.deleteProductsInBasket(product);
+	events.emit('basket:changed');
+
 	const cardBasket = new ProductCard(
 		cloneTemplate(cardPreviewTemplate),
 		basketData.checkProductInBasket(product),
@@ -111,6 +113,7 @@ events.on('preview:delete', (product: IProductItem) => {
 		events
 	);
 	modal.render({ content: cardBasket.render(product) });
+	modal.close();
 });
 
 events.on('basket:open', () => {
@@ -175,10 +178,10 @@ events.on('order:open', () => {
 
 events.on('order:submit', () => {
 	modal.render({
-		content: сontactForm.render({
+		content: contactForm.render({
 			phone: '',
 			email: '',
-			valid: true,
+			valid: false,
 			errors: [],
 		}),
 	});
@@ -189,7 +192,7 @@ events.on('payment:select', (name: IFormInfoOrder) => {
 });
 
 events.on('order:ready', () => {
-	сontactForm.valid = true;
+	contactForm.valid = true;
 });
 
 events.on('formErrors:change', (errors: Partial<IOrderForm>) => {
@@ -202,8 +205,8 @@ events.on('formErrors:change', (errors: Partial<IOrderForm>) => {
 
 events.on('formErrors:change', (errors: Partial<IOrderForm>) => {
 	const { email, phone } = errors;
-	сontactForm.valid = !email && !phone;
-	сontactForm.errors = Object.values({ email, phone })
+	contactForm.valid = !email && !phone;
+	contactForm.errors = Object.values({ email, phone })
 		.filter((i) => !!i)
 		.join('; ');
 });

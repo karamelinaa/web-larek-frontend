@@ -98,7 +98,7 @@ export class ProductCard extends Component<IProductItem> {
 	set price(value: number) {
 		this.setText(this._price, value ? `${value} синапсов` : 'Бесценно');
 		if (this._button) {
-			this._button.disabled = value === 0;
+			this._button.disabled === !value;
 		}
 	}
 

@@ -62,6 +62,7 @@ interface IProductItem {
 export interface IProductData {
     products: IProductItem[];
     preview: string | null;
+    getProduct(id: string): IProductItem;
 }
 ```
 
@@ -69,12 +70,26 @@ export interface IProductData {
 
 ```
 export interface IBasketData {
-    productIndex: number;
-    productInBasket: IProductItem[]; 
-    totalPrice: number;
-    getProductInBasket() :IProductItem[];
-    setProductInBasket(product: IProductItem[]): void;  
-    deleteProduct(product: IProductItem): void;
+    items: IProductItem[];
+    total: number;
+    setProductsInBasket(product: IProductItem): void;
+    getProductsInBasket(): IProductItem[];
+    checkProductInBasket(product: IProductItem): boolean;
+    deleteProductsInBasket(product: IProductItem): void;
+    clearBasket(): void;
+}
+```
+
+Интерфейс модели заказа
+
+```
+export interface IOrder {
+	_order: IOrderData;
+	setOrderItems(items: string[]): void;
+    setOrderPrice(value: number): void; 
+    setOrderField(field: keyof IOrderForm, value: string): void;
+    validateOrder(): boolean;
+	clearOrder(): void;
 }
 ```
 
@@ -95,6 +110,22 @@ interface IFormInfoOrderCustomer {
     phone: string;
 }
 ```
+
+Тип ошибок формы
+
+```
+export type FormErrors = Partial<Record<keyof IOrderData, string>>;
+```
+
+Итоговые данные заказа
+
+```
+export interface IOrderData extends IOrderForm {
+	items: string[];
+	total: number;
+}
+```
+
 
 Модальное окно после успешной покупки
 
@@ -121,8 +152,8 @@ export interface IOrderSuccess {
 
 В полях класса хранятся следующие данные:
 
-baseUrl: string - базовый URL
-options: RequestInit - опции
+- baseUrl: string - базовый URL
+- options: RequestInit - опции
 
 Методы:
 
@@ -161,6 +192,8 @@ options: RequestInit - опции
 
 - getProduct(id: string) :IProductItem - возвращает карточку товара по ее Id
 - set preview(productId: string | null) -  устанавливает данные для предварительного просмотра выбранного продукта
+- get preview() - получить выбранный товар для показа в модальном окне
+- get products() - получить все продукты
 
 #### Класс BasketData
 
@@ -168,8 +201,8 @@ options: RequestInit - опции
 
 В полях класса хранятся следующие данные:
 
-- _items: IProductItem[] - массив объектов `IProductItem`, представляющих список продуктов в корзине
-- _total: number - количество продуктов в корзине
+- items: IProductItem[] - массив объектов `IProductItem`, представляющих список продуктов в корзине
+- total: number - количество продуктов в корзине
 
 
 Так же класс предоставляет методы для взаимодействия с этими данными: 
@@ -177,6 +210,10 @@ options: RequestInit - опции
 - `getProductInBasket() : IProductItem[]` - получает массив объектов `IProductItem`, представляющих список продуктов в корзине
 - `setProductInBasket(product: IProductItem[])` - устанавливает массив объектов `IProductItem` в качестве списка продуктов в корзине
 - `deleteProductsInBasket(product: IProductItem)` - удаляет объект `IProductItem` из списка продуктов в корзине
+- `checkProductInBasket(product: IProductItem): boolean` - проверяет по id, находится ли продукт в корзине
+- `clearBasket()` - очищает корзину
+- `get totalPrice()` - расчитывает итоговую сумму заказа
+- `get totalCard()` - получает количество продуктов 
 
 #### Класс OrderData
 
@@ -210,6 +247,7 @@ options: RequestInit - опции
 - `setHidden(element: HTMLElement)` - cкрывает указанный элемент DOM
 - `setVisible(element: HTMLElement)` - показывает указанный элемент DOM
 - `setImage(element: HTMLImageElement, src: string, alt?: string)` - устанавливает изображение с альтернативным текстом
+- `render(data?: Partial): HTMLElement` - возвращает корневой DOM-элемент
 
 #### Класс Modal
 
@@ -226,6 +264,7 @@ options: RequestInit - опции
 - `set content(value: HTMLElement)` - устанавливает разметку модального окна
 - `open()` - открытие модального окна
 - `close()` - закрытие модального окна
+- `render(): HTMLElement` - рендерит модальное окно с переданным контентом и вызывает метод open() для открытия окна.
 
 #### Класс Basket 
 
@@ -267,7 +306,7 @@ interface IBasketView {
 - `protected onInputChange(field: keyof T, value: string)` - вешает каждому полю ввода свое событие
 - `set valid(value: boolean)` - разблокирует или блокирует кнопку отправки
 - `set errors(value: string)` - записывает ошибки валидации
-render(state: Partial<T> & IFormState) - рендер формы
+- `render(state: Partial<T> & IFormState)` - рендер формы
 
 Интерфейс:
 
@@ -280,7 +319,7 @@ interface IFormState {
 
 #### Класс OrderPayment
 
-Расширяет класс Component<T>. Отвечает за отображение формы заказа, включая поля для адреса, телефона, электронной почты и способа оплаты.
+Расширяет класс `Form`. Отвечает за отображение формы заказа, включая поля для адреса и способа оплаты.
 В конструктор класса `constructor(container: HTMLFormElement, events: IEvents)` передается DOM элемент темплейта, а так же экземпляр класса EventEmitter. Вешается обработчик события на выбор способа оплаты.
 
 Поля класса: 
@@ -296,7 +335,7 @@ interface IFormState {
 
 #### Класс OrderContacts
 
-Расширяет класс Component<T>. Отвечает за отображение формы заказа, включая поля для адреса, телефона, электронной почты и способа оплаты.
+Расширяет класс `Form` Отвечает за отображение формы заказа, включая поле для телефона и электронной почты.
 В конструктор класса `constructor(container: HTMLFormElement, events: IEvents)` передается DOM элемент темплейта, а так же экземпляр класса EventEmitter. Вешается обработчик события на выбор способа оплаты.
 
 Поля класса: 
@@ -410,9 +449,9 @@ export interface IProductAPI {
 Список всех событий, которые могут генерироваться в системе:
 События изменения данных (генерируются классами моделями данных)
 
-- `products:changed` - изменение массива карточек
+- `product:changed` - изменение массива карточек
 - `preview:changed` - выбрана карточка для показа
-- `card:select` - открытие модального окна товара
+- `product:select` - открытие модального окна товара
 
 События, возникающие при взаимодействии пользователя с интерфейсом (генерируются классами, отвечающими за представление): 
 
@@ -422,10 +461,13 @@ export interface IProductAPI {
 - `basket:delete` - удаление товара из корзины
 - `preview:delete` - удаление товара из корзины в модальном окне товара
 - `order:open` - открытие модального окна заказа
-- `order.address:change` - инпут адреса
-- `order.phone:change` - инпут номера телефона
-- `order.email:change` - инпут email
+- `order:ready` - активация кнопки далее после заполнения формы для контактов 
+- `order:change` - инпут адреса
+- `order.contacts:change` - инпут номера телефона и email
 - `order:submit` - кнопка далее в форме заказа
-- `modal:open` - открытие модального окна
+- `modal:open` - открытие модального окна 
 - `modal:close` - закрытие модального окна
 - `payment:select` - выбор способа оплаты
+- `formErrors:change` - обновляют состояние компонентов orderForm и сontactForm в соответствии с текущими ошибками в формах заказа и контактов
+- `contacts:submit` - отвечает за отправку заказа на сервер и обработку успешного или неудачного отклика
+- `success:close` - закрытие модального окна после завершения оформления 

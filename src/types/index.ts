@@ -11,13 +11,17 @@ export interface IProductItem {
 export interface IProductData {
     products: IProductItem[];
     preview: string | null;
-    get product() :IProductItem;
-    setPreview(productId: string | null): void;  
+    getProduct(id: string): IProductItem;
 }
 
 export interface IBasketData {
     items: IProductItem[];
     total: number;
+    setProductsInBasket(product: IProductItem): void;
+    getProductsInBasket(): IProductItem[];
+    checkProductInBasket(product: IProductItem): boolean;
+    deleteProductsInBasket(product: IProductItem): void;
+    clearBasket(): void;
 }
 
 
@@ -41,9 +45,10 @@ export interface IOrderForm extends IFormInfoOrder, IFormInfoOrderCustomer {}
 export interface IOrder {
 	_order: IOrderData;
 	setOrderItems(items: string[]): void;
+    setOrderPrice(value: number): void; 
+    setOrderField(field: keyof IOrderForm, value: string): void;
+    validateOrder(): boolean;
 	clearOrder(): void;
-	setOrderField(field: keyof IOrderForm, value: string): void;
-	validateOrder(): boolean;
 }
 
 export type FormErrors = Partial<Record<keyof IOrderData, string>>;
