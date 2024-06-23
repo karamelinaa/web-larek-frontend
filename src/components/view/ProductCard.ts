@@ -16,6 +16,13 @@ export class ProductCard extends Component<IProductItem> {
 	protected _button: HTMLButtonElement;
 	protected deleteButton: HTMLButtonElement;
 	protected _index: HTMLElement;
+	protected categoryType = <Record<string, string>>{
+		кнопка: 'button',
+		'софт-скил': 'soft',
+		'хард-скил': 'hard',
+		другое: 'other',
+		дополнительное: 'additional',
+	};
 
 	constructor(
 		element: HTMLElement,
@@ -92,6 +99,7 @@ export class ProductCard extends Component<IProductItem> {
 	}
 
 	set category(value: string) {
+		this._category?.classList.add(`card__category_${this.categoryType[value]}`);
 		this.setText(this._category, value);
 	}
 
